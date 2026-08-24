@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>BLAIR</title>
+    <link rel="stylesheet" href="styles.css" />
+    <!-- Precarga de fuente para rendimiento -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="header-content">
+        <h1 class="brand">BLAIR</h1>
+        <span id="header-date" class="header-date">--</span>
+      </div>
+    </header>
+
+    <main id="app-content" class="app-content">
+      <!-- VISTA INICIO (Dashboard) -->
+      <section id="view-home" class="view">
+        <div class="overview-cards">
+          <div class="card status-card" id="home-morning-card">
+            <div class="card-header">
+              <h2>Mañana</h2>
+              <span class="session-time">06:00 - 15:00</span>
+            </div>
+            <div class="status-rows" id="home-morning-status">
+              <!-- Generado por JS -->
+            </div>
+          </div>
+          <div class="card status-card" id="home-night-card">
+            <div class="card-header">
+              <h2>Noche</h2>
+              <span class="session-time">19:30 - 03:00</span>
+            </div>
+            <div class="status-rows" id="home-night-status">
+              <!-- Generado por JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VISTA PASTILLA (Tag: pill) -->
+      <section id="view-pill" class="view">
+        <div class="action-card card" id="pill-card">
+          <!-- Contenido inyectado por JS dependiendo del estado de la sesión -->
+        </div>
+      </section>
+
+      <!-- VISTA COMIDA (Tag: food) -->
+      <section id="view-food" class="view">
+        <div class="action-card card" id="food-card">
+          <!-- Contenido inyectado por JS dependiendo del estado de la sesión y la pastilla -->
+        </div>
+      </section>
+
+      <!-- VISTA HISTORIAL -->
+      <section id="view-history" class="view">
+        <div class="section-header">
+          <h2>Historial</h2>
+        </div>
+        <div id="history-list" class="history-list">
+          <!-- Generado por JS -->
+        </div>
+      </section>
+
+      <!-- VISTA ESTADÍSTICAS -->
+      <section id="view-stats" class="view">
+        <div class="section-header">
+          <h2>Estadísticas</h2>
+        </div>
+        <div class="stats-grid" id="stats-grid">
+          <!-- Generado por JS -->
+        </div>
+        <div class="chart-container card" id="chart-container">
+          <h3>Tendencia de comidas (Últimos 7 días)</h3>
+          <div id="svg-chart-wrapper"></div>
+        </div>
+      </section>
+
+      <!-- VISTA AJUSTES -->
+      <section id="view-settings" class="view">
+        <div class="section-header">
+          <h2>Ajustes</h2>
+        </div>
+        <div class="card settings-card">
+          <div class="setting-item">
+            <div>
+              <h3>Reiniciar datos</h3>
+              <p>Borra todo el historial del dispositivo.</p>
+            </div>
+            <button class="btn-secondary" id="btn-show-reset">Reiniciar</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- NAVEGACIÓN INFERIOR (Oculta si se detecta tag directo, priorizando flujo rápido) -->
+    <nav id="bottom-nav" class="bottom-nav">
+      <button class="nav-item active" data-target="view-home">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span>Inicio</span>
+      </button>
+      <button class="nav-item" data-target="view-history">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>Historial</span>
+      </button>
+      <button class="nav-item" data-target="view-stats">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        <span>Estadísticas</span>
+      </button>
+      <button class="nav-item" data-target="view-settings">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="3"></circle>
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+          ></path>
+        </svg>
+        <span>Ajustes</span>
+      </button>
+    </nav>
+
+    <!-- MODAL DE CONFIRMACIÓN -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <h3 id="modal-title">Reiniciar datos</h3>
+        <p id="modal-msg" class="text-secondary">
+          Introduce la contraseña para continuar.
+        </p>
+        <input
+          type="password"
+          id="modal-input"
+          class="modal-input"
+          placeholder="Contraseña"
+          inputmode="numeric"
+        />
+        <p id="modal-error" class="modal-error"></p>
+        <div class="modal-actions">
+          <button class="btn-secondary" id="modal-cancel">Cancelar</button>
+          <button class="btn-primary" id="modal-confirm">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICACIÓN TOAST -->
+    <div id="toast" class="toast"></div>
+
+    <script src="main.js"></script>
+  </body>
+</html>
