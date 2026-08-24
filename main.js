@@ -30,7 +30,6 @@ function loadData() {
     } catch (e) {
         console.error("Corrupted JSON in localStorage", e);
     }
-    // Fallback if empty or corrupt
     state = { events: [] };
 }
 
@@ -78,7 +77,6 @@ function getCurrentSessionInfo(date = new Date()) {
         sessionType = 'morning';
     } else if (timeFloat >= 19.5 || timeFloat < 3) {
         sessionType = 'night';
-        // Si estamos entre 00:00 y 03:00, la fecha lógica de la sesión es la del día anterior
         if (timeFloat < 3) {
             const prev = new Date(date);
             prev.setDate(prev.getDate() - 1);
@@ -86,7 +84,6 @@ function getCurrentSessionInfo(date = new Date()) {
         }
     }
 
-    // Calcular siguiente sesión si estamos fuera de horario
     if (sessionType === 'none') {
         if (timeFloat >= 3 && timeFloat < 6) {
             nextSession = { name: 'Mañana', time: '06:00' };
@@ -127,9 +124,8 @@ function getEvent(logicalDate, sessionType, eventType) {
 
 function registerAction(eventType) {
     const { sessionType, logicalDate } = getCurrentSessionInfo();
-    if (sessionType === 'none') return false; // Fail safe
+    if (sessionType === 'none') return false;
     
-    // Evitar duplicados
     if (getEvent(logicalDate, sessionType, eventType)) return false;
 
     const event = {
@@ -230,19 +226,26 @@ function renderFoodView() {
             <button class="btn-primary" disabled>Comida registrada</button>
         `;
     } else if (!pillEvent) {
+        // Opción integrada para registrar la pastilla directamente desde el tag de comida si no se trackeó antes
         container.innerHTML = `
             <div class="status-icon warning">${ICONS.warning}</div>
             <h2 class="action-title">Pastilla pendiente</h2>
             <p class="text-secondary">${sessionName}</p>
-            <p class="text-secondary mt-4">Registra primero la pastilla de esta sesión.</p>
-            <button class="btn-primary" disabled>Registrar comida</button>
+            <p class="text-secondary mt-4">No consta el registro de la pastilla para esta sesión. Puedes registrarla ahora mismo para desbloquear la comida.</p>
+            <button class="btn-primary" id="btn-register-pill-from-food">Registrar pastilla</button>
+            <button class="btn-primary" disabled style="margin-top: 10px; opacity: 0.5;">Registrar comida</button>
         `;
+        document.getElementById('btn-register-pill-from-food').addEventListener('click', () => {
+            registerAction('pill');
+            showToast('Pastilla registrada');
+            renderFoodView(); // Actualiza la vista inmediatamente al estado con pastilla dada
+        });
     } else {
         container.innerHTML = `
             <div class="status-icon">${ICONS.food}</div>
             <h2 class="action-title">Comida</h2>
             <p class="text-secondary">${sessionName}</p>
-            <div class="status-label mt-4 justify-center">
+            <div class="status-label mt-4 justify-center" style="justify-content: center; gap: 8px; margin-bottom: 12px;">
                 ${ICONS.check} <span class="text-secondary">Pastilla dada a las ${pillEvent.localTime}</span>
             </div>
             <button class="btn-primary" id="btn-register-food">Registrar comida</button>
@@ -283,10 +286,7 @@ function renderHistoryView() {
         return;
     }
 
-    // Ordenar de más reciente a más antiguo
     const sorted = [...state.events].sort((a, b) => b.timestamp - a.timestamp);
-    
-    // Solo mostrar los últimos 20 para mantener rendimiento
     const limited = sorted.slice(0, 20);
 
     list.innerHTML = limited.map(e => `
@@ -315,8 +315,6 @@ function renderStatsView() {
     
     let mCount = 0, nCount = 0;
     let mMinsSum = 0, nMinsSum = 0;
-    
-    // Listas para calcular max/min
     let mTimes = [], nTimes = [];
 
     foods.forEach(f => {
@@ -331,7 +329,6 @@ function renderStatsView() {
             mTimes.push(totalMins);
         } else {
             nCount++;
-            // Ajuste para sesión nocturna: considerar que la madrugada (+24h) pertenece al periodo lógico continuo
             if (h < 12) h += 24;
             const totalMins = h * 60 + m;
             nMinsSum += totalMins;
@@ -381,15 +378,11 @@ function renderChart(foods) {
         return;
     }
 
-    // Filtrar comidas de los últimos 7 días lógicos
-    // Usamos un mapa simplificado (SVG estático sin librería)
-    
     const width = wrapper.clientWidth || 300;
     const height = 120;
     
     let svg = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}">`;
     
-    // Líneas base
     const yMorning = 40;
     const yNight = 90;
     
@@ -399,8 +392,7 @@ function renderChart(foods) {
     svg += `<text x="0" y="${yNight + 4}" class="chart-label">Noche</text>`;
     svg += `<line x1="45" y1="${yNight}" x2="${width}" y2="${yNight}" class="chart-line"/>`;
 
-    // Solo coger un máximo de 7 días recientes
-    const recentFoods = [...foods].sort((a,b)=>a.timestamp - b.timestamp).slice(-14); // up to 14 points
+    const recentFoods = [...foods].sort((a,b)=>a.timestamp - b.timestamp).slice(-14);
     
     if (recentFoods.length > 0) {
         const stepX = (width - 60) / Math.max(recentFoods.length - 1, 1);
@@ -411,18 +403,15 @@ function renderChart(foods) {
             const cy = isMorning ? yMorning : yNight;
             const cssClass = isMorning ? 'chart-dot-morning' : 'chart-dot-night';
             
-            // Añadir ligera variación vertical basada en la hora para que los puntos no pisen la línea
             const d = new Date(f.timestamp);
             let offset = 0;
             if (isMorning) {
-                // rango 6 a 15, mapeado suavemente
                 offset = ((d.getHours() - 10) * 2); 
             } else {
                 let h = d.getHours();
                 if (h<12) h+=24;
                 offset = ((h - 22) * 2);
             }
-            // limit offset
             offset = Math.max(-10, Math.min(10, offset));
 
             svg += `<circle cx="${x}" cy="${cy + offset}" r="4" class="${cssClass}" />`;
@@ -432,7 +421,6 @@ function renderChart(foods) {
     svg += `</svg>`;
     wrapper.innerHTML = svg;
 }
-
 
 /* =========================================
    NAVIGATION & UI HANDLERS
@@ -446,7 +434,6 @@ function switchView(viewId) {
     const navBtn = document.querySelector(`[data-target="${viewId}"]`);
     if(navBtn) navBtn.classList.add('active');
 
-    // Render specifics
     if (viewId === 'view-home') renderHomeView();
     if (viewId === 'view-history') renderHistoryView();
     if (viewId === 'view-stats') renderStatsView();
@@ -456,9 +443,6 @@ function initRouter() {
     const params = new URLSearchParams(window.location.search);
     const tag = params.get('tag');
 
-    // Ocultar nav inferior si es un escaneo directo de NFC para limpiar la interfaz,
-    // (Opcional, en este caso lo mantenemos para que puedan navegar, pero priorizamos la vista)
-    
     if (tag === 'pill') {
         switchView('view-pill');
         renderPillView();
@@ -500,7 +484,7 @@ document.getElementById('modal-confirm').addEventListener('click', () => {
         clearAllData();
         modal.classList.remove('active');
         showToast('Datos reiniciados');
-        initRouter(); // re-render view
+        initRouter();
     } else {
         modalError.textContent = 'Contraseña incorrecta';
     }
@@ -514,19 +498,15 @@ function init() {
     document.getElementById('header-date').textContent = getCurrentDateFormatted();
     initRouter();
     
-    // Configurar Navigation
     document.querySelectorAll('.nav-item').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const target = e.currentTarget.getAttribute('data-target');
-            // Remove NFC tags from URL visually without reload
             window.history.replaceState({}, document.title, window.location.pathname);
             switchView(target);
         });
     });
 
-    // Auto-update times every 30s
     setInterval(updateRelativeTimes, 30000);
 }
 
-// Start
 document.addEventListener('DOMContentLoaded', init);
